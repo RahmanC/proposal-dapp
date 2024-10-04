@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Contract } from "ethers";
-import { Interface } from "ethers";
+import { Contract, Interface } from "ethers";
 import ABI from "../ABI/proposal.json";
 
 const multicallAbi = [
