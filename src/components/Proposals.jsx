@@ -7,7 +7,7 @@ const Proposals = ({ proposals }) => {
       {proposals.length === 0 ? (
         <Text>No data to display</Text>
       ) : (
-        proposals.map(
+        proposals?.map(
           (
             {
               deadline,

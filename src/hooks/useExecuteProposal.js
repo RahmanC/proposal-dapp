@@ -1,61 +1,61 @@
-import { liskSepoliaNetwork } from "../connection";
 import useContract from "./useContract";
+import { liskSepoliaNetwork } from "../connection";
 
+import { useAppKitAccount, useAppKitNetwork } from "@reown/appkit/react";
 import { useCallback, useState } from "react";
 import { toast } from "react-toastify";
-import { useAppKitAccount } from "@reown/appkit/react";
-import { useAppKitNetwork } from "@reown/appkit/react";
 
-const useVote = () => {
+const useExecuteProposal = () => {
   const contract = useContract(true);
   const { address } = useAppKitAccount();
   const { chainId } = useAppKitNetwork();
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const vote = useCallback(
+  const executeProposal = useCallback(
     async (proposalId) => {
-      if (!proposalId) {
-        toast.error("Proposal ID is required");
-        return;
-      }
       if (!address) {
         toast.error("Connect your wallet!");
         return;
       }
+
       if (Number(chainId) !== liskSepoliaNetwork.chainId) {
         toast.error("You are not connected to the right network");
         return;
       }
+
       if (!contract) {
         toast.error("Cannot get contract!");
         return;
       }
 
+      setIsLoading(true);
       try {
-        setIsLoading(true);
-        const estimatedGas = await contract.vote.estimateGas(proposalId);
-        const tx = await contract.vote(proposalId, {
+        const estimatedGas = await contract.executeProposal.estimateGas(
+          proposalId
+        );
+
+        const tx = await contract.executeProposal(proposalId, {
           gasLimit: (estimatedGas * BigInt(120)) / BigInt(100),
         });
-        const receipt = await tx.wait();
 
+        const receipt = await tx.wait();
         if (receipt.status === 1) {
-          toast.success("Vote successful");
-          return;
+          toast.success("Proposal executed successfully!");
+        } else {
+          toast.error("Proposal execution failed");
         }
-        toast.error("Vote failed");
-        return;
       } catch (error) {
-        console.error("Error while voting: ", error);
-        toast.error("Vote errored", error);
+        console.error("Error executing proposal: ", error);
+        toast.error("Proposal execution errored");
       } finally {
         setIsLoading(false);
       }
     },
     [address, chainId, contract]
   );
-  return { vote, isLoading };
+
+  return { executeProposal, isLoading };
 };
 
-export default useVote;
+export default useExecuteProposal;

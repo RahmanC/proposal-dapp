@@ -68,10 +68,12 @@ const useProposals = (readOnlyContract, readOnlyProvider) => {
 
     contract.on("ProposalCreated", fetchProposals);
     contract.on("Voted", fetchProposals);
+    contract.on("ProposalExecuted", fetchProposals);
 
     return () => {
       contract.removeAllListeners("ProposalCreated");
       contract.removeAllListeners("Voted");
+      contract.removeAllListeners("ProposalExecuted");
     };
   }, [fetchProposals, readOnlyProvider]);
 
