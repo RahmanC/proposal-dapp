@@ -1,21 +1,26 @@
 import { useCallback, useEffect, useState } from "react";
 import { Contract, Interface } from "ethers";
 import ABI from "../ABI/proposal.json";
+import { jsonRpcProvider } from "../constants/provider";
 
 const multicallAbi = [
   "function tryAggregate(bool requireSuccess, (address target, bytes callData)[] calls) returns ((bool success, bytes returnData)[] returnData)",
 ];
 
-const useProposals = (readOnlyContract, readOnlyProvider) => {
+const useProposals = () => {
   const [proposals, setProposals] = useState([]);
 
   const fetchProposals = useCallback(async () => {
-    if (!readOnlyContract) return;
+    const readOnlyContract = new Contract(
+      import.meta.env.VITE_CONTRACT_ADDRESS,
+      ABI,
+      jsonRpcProvider
+    );
 
     const multicallContract = new Contract(
       import.meta.env.VITE_MULTICALL_ADDRESS,
       multicallAbi,
-      readOnlyProvider
+      jsonRpcProvider
     );
 
     const itf = new Interface(ABI);
@@ -54,7 +59,7 @@ const useProposals = (readOnlyContract, readOnlyProvider) => {
     } catch (error) {
       console.log("Error fetching proposals: ", error);
     }
-  }, [readOnlyContract, readOnlyProvider]);
+  }, []);
 
   useEffect(() => {
     fetchProposals();
@@ -62,7 +67,7 @@ const useProposals = (readOnlyContract, readOnlyProvider) => {
     const contract = new Contract(
       import.meta.env.VITE_CONTRACT_ADDRESS,
       ABI,
-      readOnlyProvider
+      jsonRpcProvider
     );
 
     contract.on("ProposalCreated", fetchProposals);
@@ -74,7 +79,7 @@ const useProposals = (readOnlyContract, readOnlyProvider) => {
       contract.removeAllListeners("Voted");
       contract.removeAllListeners("ProposalExecuted");
     };
-  }, [fetchProposals, readOnlyProvider]);
+  }, [fetchProposals]);
 
   return { proposals, fetchProposals };
 };
